@@ -8,20 +8,22 @@ import "../styles/global.css";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
+
     <title>{title}</title>
   </head>
 
   <body class="bg-[#000] text-white flex">
     <!-- SIDEBAR -->
     <aside
-      class="w-64 h-screen flex flex-col justify-between
-  bg-[#252525] border-r border-white/10 p-6"
+      class="w-64 h-screen flex flex-col justify-between bg-[#252525] border-r border-white/10 p-6"
     >
       <!-- TOP -->
       <div>
@@ -37,11 +39,11 @@ import "../styles/global.css";
           <a
             href="/dashboard"
             class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
-    ${
-      Astro.url.pathname === "/dashboard"
-        ? "bg-[#DF533C]/20 text-white"
-        : "text-gray-400 hover:text-white hover:bg-white/5"
-    }`}
+            ${
+              Astro.url.pathname.startsWith("/dashboard")
+                ? "bg-[#DF533C]/20 text-[#DF533C]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            }`}
           >
             <i class="fa-solid fa-chart-line"></i>
             <span>Dashboard</span>
@@ -51,11 +53,11 @@ import "../styles/global.css";
           <a
             href="/websites"
             class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
-    ${
-      Astro.url.pathname === "/websites"
-        ? "bg-[#DF533C]/20 text-white"
-        : "text-gray-400 hover:text-white hover:bg-white/5"
-    }`}
+            ${
+              Astro.url.pathname.startsWith("/websites")
+                ? "bg-[#DF533C]/20 text-[#DF533C]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            }`}
           >
             <i class="fa-solid fa-globe"></i>
             <span>Websites</span>
@@ -63,12 +65,12 @@ import "../styles/global.css";
         </nav>
       </div>
 
-      <!-- BOTTOM USER -->
+      <!-- USER -->
       <div class="border-t border-white/10 pt-4">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-8 h-8 rounded-full bg-gray-700"></div>
           <div>
-            <p id="userEmail" class="text-sm text-white"></p>
+            <p id="userEmailSidebar" class="text-sm text-white"></p>
             <p class="text-xs text-gray-400">Client</p>
           </div>
         </div>
@@ -76,8 +78,8 @@ import "../styles/global.css";
         <button
           id="logoutBtn"
           class="w-full flex items-center justify-center gap-2
-      bg-red-500/80 hover:bg-red-500
-      px-3 py-2 rounded-lg text-sm transition"
+          bg-red-500/80 hover:bg-red-500
+          px-3 py-2 rounded-lg text-sm transition"
         >
           <i class="fa-solid fa-right-from-bracket"></i>
           Logout
@@ -86,12 +88,12 @@ import "../styles/global.css";
     </aside>
 
     <!-- MAIN -->
-    <main class="flex-1 p-10">
-      <div class="max-w-7xl mx-auto">
+    <main class="flex-1 w-full px-12 py-10">
+      <div class="w-full">
         <!-- HEADER -->
         <div class="flex justify-between items-center mb-10">
           <h1 class="text-3xl font-semibold tracking-tight">{title}</h1>
-          <span id="userEmail" class="text-gray-400 text-sm"></span>
+          <!-- <span id="userEmailHeader" class="text-gray-400 text-sm"></span> -->
         </div>
 
         <slot />
@@ -102,7 +104,7 @@ import "../styles/global.css";
     <div
       id="toast"
       class="fixed bottom-6 right-6
-      bg-white/10 backdrop-blur-lg border border-white/10
+      bg-[#DF533C] text-white
       px-5 py-3 rounded-xl shadow-lg hidden text-sm"
     >
     </div>
@@ -111,21 +113,23 @@ import "../styles/global.css";
       import { supabase } from "/supabase.js";
 
       const logoutBtn = document.getElementById("logoutBtn");
-      const userEmail = document.getElementById("userEmail");
+      const emailSidebar = document.getElementById("userEmailSidebar");
+      const emailHeader = document.getElementById("userEmailHeader");
       const toast = document.getElementById("toast");
 
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (user && userEmail) {
-        userEmail.textContent = user.email;
+      if (user) {
+        if (emailSidebar) emailSidebar.textContent = user.email;
+        if (emailHeader) emailHeader.textContent = user.email;
       }
 
-      logoutBtn.addEventListener("click", async () => {
+      logoutBtn.onclick = async () => {
         await supabase.auth.signOut();
         window.location.href = "/login";
-      });
+      };
 
       window.showToast = (message) => {
         toast.textContent = message;

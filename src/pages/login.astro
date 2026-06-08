@@ -2,51 +2,180 @@
 import "../styles/global.css";
 ---
 
-<html>
-  <body
-    class="bg-gray-900 text-white flex items-center justify-center h-screen"
-  >
-    <form id="loginForm" class="bg-gray-800 p-6 rounded w-80">
-      <h2 class="text-xl mb-4">Login</h2>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
 
-      <input
-        id="email"
-        type="email"
-        placeholder="Email"
-        class="w-full mb-3 p-2 text-black"
-      />
-      <input
-        id="password"
-        type="password"
-        placeholder="Password"
-        class="w-full mb-3 p-2 text-black"
-      />
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
 
-      <button class="bg-blue-500 w-full p-2">Login</button>
-    </form>
+  <body class="bg-[#000] text-white flex items-center justify-center h-screen">
+    <!-- BACKGROUND GLOW -->
+    <div
+      class="absolute w-[500px] h-[500px] bg-[#DF533C]/20 blur-[120px] rounded-full"
+    >
+    </div>
 
+    <!-- CARD -->
+    <div class="relative z-10 w-full max-w-md">
+      <div
+        class="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-xl"
+      >
+        <!-- LOGO -->
+        <div class="mb-6 text-center">
+          <img src="/favicon.svg" class="w-14 h-14 mx-auto mb-3" />
+          <p class="text-gray-400 text-sm">Client Dashboard Login</p>
+        </div>
+
+        <!-- FORM -->
+        <form id="loginForm" class="space-y-4">
+          <!-- EMAIL -->
+          <div>
+            <label class="text-xs text-gray-400">Email</label>
+            <div class="relative mt-1">
+              <i
+                class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"
+              ></i>
+              <input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                class="w-full pl-10 pr-3 py-3 rounded-lg bg-black border border-white/10 text-white focus:outline-none focus:border-[#DF533C]"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- PASSWORD -->
+          <div>
+            <label class="text-xs text-gray-400">Password</label>
+            <div class="relative mt-1">
+              <i
+                class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"
+              ></i>
+
+              <input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                class="w-full pl-10 pr-10 py-3 rounded-lg bg-black border border-white/10 text-white focus:outline-none focus:border-[#DF533C]"
+                required
+              />
+
+              <!-- TOGGLE -->
+              <button
+                type="button"
+                id="togglePassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+              >
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- OPTIONS -->
+          <div class="flex items-center justify-between text-sm">
+            <!-- FORGOT -->
+            <a
+              href="/forgot-password"
+              class="text-gray-400 hover:text-[#DF533C] transition"
+            >
+              Forgot password?
+            </a>
+          </div>
+
+          <!-- BUTTON -->
+          <button
+            id="loginBtn"
+            class="w-full bg-[#DF533C] hover:opacity-90 transition py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+          >
+            <span id="btnText">
+              <i class="fa-solid fa-right-to-bracket"></i>
+              Login
+            </span>
+
+            <!-- SPINNER -->
+            <span id="spinner" class="hidden">
+              <i class="fa-solid fa-spinner animate-spin"></i>
+            </span>
+          </button>
+        </form>
+
+        <!-- ERROR -->
+        <p id="errorMsg" class="text-red-400 text-sm mt-4 hidden"></p>
+      </div>
+    </div>
+
+    <!-- SCRIPT -->
     <script type="module">
       import { supabase } from "/supabase.js";
 
-      document
-        .getElementById("loginForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
+      const form = document.getElementById("loginForm");
+      const errorMsg = document.getElementById("errorMsg");
+      const togglePassword = document.getElementById("togglePassword");
+      const passwordInput = document.getElementById("password");
 
-          const email = document.getElementById("email").value;
-          const password = document.getElementById("password").value;
+      const btnText = document.getElementById("btnText");
+      const spinner = document.getElementById("spinner");
 
-          const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+      // 👁 SHOW / HIDE PASSWORD
+      togglePassword.onclick = () => {
+        const isPassword = passwordInput.type === "password";
+        passwordInput.type = isPassword ? "text" : "password";
+        togglePassword.innerHTML = isPassword
+          ? '<i class="fa-solid fa-eye-slash"></i>'
+          : '<i class="fa-solid fa-eye"></i>';
+      };
 
-          if (error) {
-            alert(error.message);
-          } else {
-            window.location.href = "/dashboard";
-          }
+      // 🔐 LOGIN
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        errorMsg.classList.add("hidden");
+
+        // LOADING STATE
+        btnText.classList.add("hidden");
+        spinner.classList.remove("hidden");
+
+        const email = document.getElementById("email").value;
+        const password = passwordInput.value;
+
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
+
+        if (error) {
+          errorMsg.textContent = error.message;
+          errorMsg.classList.remove("hidden");
+
+          // RESET BUTTON
+          spinner.classList.add("hidden");
+          btnText.classList.remove("hidden");
+          return;
+        }
+
+        // SUCCESS UI
+        form.innerHTML = `
+  <div class="text-center success-animate">
+    <div class="text-green-400 text-3xl mb-2">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <p class="text-sm text-gray-300">Login successful</p>
+  </div>
+`;
+
+        // DELAY REDIRECT
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1200);
+      });
     </script>
   </body>
 </html>
