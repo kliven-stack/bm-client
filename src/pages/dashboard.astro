@@ -1,0 +1,75 @@
+---
+import Layout from "../layouts/DashboardLayout.astro";
+---
+
+<Layout title="Dashboard">
+  <!-- TOP STATS -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div class="bg-[#252525] p-5 rounded-2xl border border-white/10">
+      <p class="text-sm text-gray-400">Total Websites</p>
+      <p id="totalSites" class="text-2xl font-semibold">0</p>
+    </div>
+
+    <div class="bg-[#252525] p-5 rounded-2xl border border-white/10">
+      <p class="text-sm text-gray-400">Online</p>
+      <p id="onlineSites" class="text-2xl text-green-400 font-semibold">0</p>
+    </div>
+
+    <div class="bg-[#252525] p-5 rounded-2xl border border-white/10">
+      <p class="text-sm text-gray-400">Offline</p>
+      <p id="offlineSites" class="text-2xl text-red-400 font-semibold">0</p>
+    </div>
+  </div>
+
+  <!-- CHART -->
+
+  <script type="module">
+    import { supabase } from "/supabase.js";
+
+    const totalEl = document.getElementById("totalSites");
+    const onlineEl = document.getElementById("onlineSites");
+    const offlineEl = document.getElementById("offlineSites");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) window.location.href = "/login";
+
+    async function checkStatus(url) {
+      try {
+        const res = await fetch(
+          `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+        );
+        return res.ok;
+      } catch {
+        return false;
+      }
+    }
+
+    async function loadAnalytics() {
+      const { data } = await supabase
+        .from("websites")
+        .select("*")
+        .eq("user_id", user.id);
+
+      let online = 0;
+      let offline = 0;
+
+      for (const site of data) {
+        const isOnline = await checkStatus(site.url);
+        if (isOnline) online++;
+        else offline++;
+      }
+
+      totalEl.textContent = data.length;
+      onlineEl.textContent = online;
+      offlineEl.textContent = offline;
+
+      // ⚠️ NOTE:
+      // Chart is static widget (UI), but your real numbers are above
+      // If you want dynamic chart, we can wire a custom chart later
+    }
+
+    loadAnalytics();
+  </script>
+</Layout>

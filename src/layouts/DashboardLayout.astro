@@ -1,0 +1,140 @@
+---
+const { title = "Dashboard" } = Astro.props;
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <title>{title}</title>
+  </head>
+
+  <body class="bg-[#000] text-white flex">
+    <!-- SIDEBAR -->
+    <aside
+      class="w-64 h-screen flex flex-col justify-between
+  bg-[#252525] border-r border-white/10 p-6"
+    >
+      <!-- TOP -->
+      <div>
+        <!-- LOGO -->
+        <div class="flex items-center gap-3 mb-10">
+          <img src="/favicon.svg" alt="Logo" class="w-8 h-8 object-contain" />
+          <h2 class="text-lg font-semibold tracking-tight">Workspace</h2>
+        </div>
+
+        <!-- NAV -->
+        <nav class="space-y-2 text-sm">
+          <!-- DASHBOARD -->
+          <a
+            href="/dashboard"
+            class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
+    ${
+      Astro.url.pathname === "/dashboard"
+        ? "bg-[#DF533C]/20 text-white"
+        : "text-gray-400 hover:text-white hover:bg-white/5"
+    }`}
+          >
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+
+          <!-- WEBSITES -->
+          <a
+            href="/websites"
+            class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
+    ${
+      Astro.url.pathname === "/websites"
+        ? "bg-[#DF533C]/20 text-white"
+        : "text-gray-400 hover:text-white hover:bg-white/5"
+    }`}
+          >
+            <i class="fa-solid fa-globe"></i>
+            <span>Websites</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- BOTTOM USER -->
+      <div class="border-t border-white/10 pt-4">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-full bg-gray-700"></div>
+          <div>
+            <p id="userEmail" class="text-sm text-white"></p>
+            <p class="text-xs text-gray-400">Client</p>
+          </div>
+        </div>
+
+        <button
+          id="logoutBtn"
+          class="w-full flex items-center justify-center gap-2
+      bg-red-500/80 hover:bg-red-500
+      px-3 py-2 rounded-lg text-sm transition"
+        >
+          <i class="fa-solid fa-right-from-bracket"></i>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 p-10">
+      <div class="max-w-7xl mx-auto">
+        <!-- HEADER -->
+        <div class="flex justify-between items-center mb-10">
+          <h1 class="text-3xl font-semibold tracking-tight">{title}</h1>
+          <span id="userEmail" class="text-gray-400 text-sm"></span>
+        </div>
+
+        <slot />
+      </div>
+    </main>
+
+    <!-- TOAST -->
+    <div
+      id="toast"
+      class="fixed bottom-6 right-6
+      bg-white/10 backdrop-blur-lg border border-white/10
+      px-5 py-3 rounded-xl shadow-lg hidden text-sm"
+    >
+    </div>
+
+    <script type="module">
+      import { supabase } from "/supabase.js";
+
+      const logoutBtn = document.getElementById("logoutBtn");
+      const userEmail = document.getElementById("userEmail");
+      const toast = document.getElementById("toast");
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user && userEmail) {
+        userEmail.textContent = user.email;
+      }
+
+      logoutBtn.addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "/login";
+      });
+
+      window.showToast = (message) => {
+        toast.textContent = message;
+        toast.classList.remove("hidden");
+
+        setTimeout(() => {
+          toast.classList.add("hidden");
+        }, 2000);
+      };
+    </script>
+  </body>
+</html>

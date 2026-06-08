@@ -1,0 +1,205 @@
+---
+import Layout from "../layouts/DashboardLayout.astro";
+---
+
+<Layout title="Websites">
+  <!-- FORM -->
+  <div
+    class="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl mb-12 max-w-xl"
+  >
+    <h2 class="text-lg font-semibold mb-4">Add Website</h2>
+
+    <form id="websiteForm" class="space-y-3">
+      <input
+        id="name"
+        placeholder="Website Name"
+        class="w-full p-3 rounded-lg bg-black border border-white/10 border border-white/10 text-white"
+        required
+      />
+
+      <input
+        id="url"
+        placeholder="https://example.com"
+        class="w-full p-3 rounded-lg bg-black border border-white/10 border border-white/10 text-white"
+        required
+      />
+
+      <input
+        id="admin_url"
+        placeholder="Admin URL"
+        class="w-full p-3 rounded-lg bg-black border border-white/10 border border-white/10 text-white"
+        required
+      />
+
+      <button
+        class="bg-[var(--accent)] hover:opacity-90 px-4 py-2 rounded-lg text-white"
+      >
+        Add Website
+      </button>
+    </form>
+  </div>
+
+  <!-- LIST -->
+  <div id="app" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  </div>
+
+  <!-- MODAL -->
+  <div
+    id="editModal"
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center"
+  >
+    <div
+      class="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl w-full max-w-md"
+    >
+      <h2 class="mb-4 font-semibold">Edit Website</h2>
+
+      <input
+        id="edit_name"
+        class="w-full p-3 mb-3 bg-black border border-white/10 rounded text-white"
+      />
+      <input
+        id="edit_url"
+        class="w-full p-3 mb-3 bg-black border border-white/10 rounded text-white"
+      />
+      <input
+        id="edit_admin"
+        class="w-full p-3 mb-4 bg-black border border-white/10 rounded text-white"
+      />
+
+      <div class="flex justify-end gap-2">
+        <button id="closeModal">Cancel</button>
+        <button id="saveEdit" class="bg-blue-500 px-3 py-1 rounded">Save</button
+        >
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from "/supabase.js";
+
+    const app = document.getElementById("app");
+    const form = document.getElementById("websiteForm");
+
+    const modal = document.getElementById("editModal");
+    const editName = document.getElementById("edit_name");
+    const editUrl = document.getElementById("edit_url");
+    const editAdmin = document.getElementById("edit_admin");
+
+    let currentEditId = null;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) window.location.href = "/login";
+
+    async function loadWebsites() {
+      const { data } = await supabase
+        .from("websites")
+        .select("*")
+        .eq("user_id", user.id);
+
+      app.innerHTML = data
+        .map(
+          (site) => `
+        <div class="relative bg-[#252525] border border-white/10 rounded-2xl p-6 group">
+
+          <div class="flex justify-between mb-4">
+            <h2>${site.name}</h2>
+
+<div class="flex gap-3 text-sm opacity-70 group-hover:opacity-100 transition">
+
+  <button class="editBtn hover:text-[var(--accent)]"
+    data-id="${site.id}"
+    data-name="${site.name}"
+    data-url="${site.url}"
+    data-admin="${site.admin_url}">
+    <i class="fa-solid fa-pen-to-square"></i>
+  </button>
+
+  <button class="deleteBtn hover:text-red-400"
+    data-id="${site.id}">
+    <i class="fa-solid fa-trash"></i>
+  </button>
+
+</div>
+          </div>
+
+          <div class="text-xs text-gray-400 mb-5">${site.url}</div>
+
+          <div class="flex gap-2">
+            <a href="${site.url}" target="_blank" class="flex-1 text-center bg-[var(--accent)] hover:opacity-90 px-3 py-2 rounded-lg text-sm font-medium">
+              Visit
+            </a>
+
+            <a href="${site.admin_url}" target="_blank" class="flex-1 bg-white/10 text-center py-2 rounded">
+              Admin
+            </a>
+          </div>
+
+        </div>
+      `,
+        )
+        .join("");
+
+      document.querySelectorAll(".editBtn").forEach((btn) => {
+        btn.onclick = () => {
+          currentEditId = btn.dataset.id;
+
+          editName.value = btn.dataset.name;
+          editUrl.value = btn.dataset.url;
+          editAdmin.value = btn.dataset.admin;
+
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        };
+      });
+
+      document.querySelectorAll(".deleteBtn").forEach((btn) => {
+        btn.onclick = async () => {
+          await supabase.from("websites").delete().eq("id", btn.dataset.id);
+          window.showToast("Deleted");
+          loadWebsites();
+        };
+      });
+    }
+
+    document.getElementById("saveEdit").onclick = async () => {
+      await supabase
+        .from("websites")
+        .update({
+          name: editName.value,
+          url: editUrl.value,
+          admin_url: editAdmin.value,
+        })
+        .eq("id", currentEditId);
+
+      modal.classList.add("hidden");
+      window.showToast("Updated");
+      loadWebsites();
+    };
+
+    document.getElementById("closeModal").onclick = () => {
+      modal.classList.add("hidden");
+    };
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+
+      await supabase.from("websites").insert([
+        {
+          name: name.value,
+          url: url.value,
+          admin_url: admin_url.value,
+          user_id: user.id,
+        },
+      ]);
+
+      form.reset();
+      window.showToast("Added");
+      loadWebsites();
+    };
+
+    loadWebsites();
+  </script>
+</Layout>
