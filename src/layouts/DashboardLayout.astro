@@ -35,33 +35,50 @@ import "../styles/global.css";
 
         <!-- NAV -->
         <nav class="space-y-2 text-sm">
-          <!-- DASHBOARD -->
-          <a
-            href="/dashboard"
-            class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
-            ${
-              Astro.url.pathname.startsWith("/dashboard")
-                ? "bg-[#DF533C]/20 text-[#DF533C]"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <i class="fa-solid fa-chart-line"></i>
-            <span>Dashboard</span>
-          </a>
+          <!-- CLIENT NAV (DEFAULT VISIBLE) -->
+          <div id="clientNav" class="space-y-2">
+            <a
+              href="/dashboard"
+              class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
+              ${
+                Astro.url.pathname.startsWith("/dashboard")
+                  ? "bg-[#DF533C]/20 text-[#DF533C]"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <i class="fa-solid fa-chart-line"></i>
+              <span>Dashboard</span>
+            </a>
 
-          <!-- WEBSITES -->
-          <a
-            href="/websites"
-            class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
-            ${
-              Astro.url.pathname.startsWith("/websites")
-                ? "bg-[#DF533C]/20 text-[#DF533C]"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            <i class="fa-solid fa-globe"></i>
-            <span>Websites</span>
-          </a>
+            <a
+              href="/websites"
+              class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
+              ${
+                Astro.url.pathname.startsWith("/websites")
+                  ? "bg-[#DF533C]/20 text-[#DF533C]"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <i class="fa-solid fa-globe"></i>
+              <span>Websites</span>
+            </a>
+          </div>
+
+          <!-- ADMIN NAV (HIDDEN BY DEFAULT) -->
+          <div id="adminNav" style="display:none;">
+            <a
+              href="/admin"
+              class={`flex items-center gap-3 px-3 py-2 rounded-lg transition
+              ${
+                Astro.url.pathname.startsWith("/admin")
+                  ? "bg-[#DF533C]/20 text-[#DF533C]"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <i class="fa-solid fa-users"></i>
+              <span>Clients</span>
+            </a>
+          </div>
         </nav>
       </div>
 
@@ -71,7 +88,7 @@ import "../styles/global.css";
           <div class="w-8 h-8 rounded-full bg-gray-700"></div>
           <div>
             <p id="userEmailSidebar" class="text-sm text-white"></p>
-            <p class="text-xs text-gray-400">Client</p>
+            <p id="userRole" class="text-xs text-gray-400">Client</p>
           </div>
         </div>
 
@@ -90,10 +107,8 @@ import "../styles/global.css";
     <!-- MAIN -->
     <main class="flex-1 w-full px-12 py-10">
       <div class="w-full">
-        <!-- HEADER -->
         <div class="flex justify-between items-center mb-10">
           <h1 class="text-3xl font-semibold tracking-tight">{title}</h1>
-          <!-- <span id="userEmailHeader" class="text-gray-400 text-sm"></span> -->
         </div>
 
         <slot />
@@ -103,9 +118,7 @@ import "../styles/global.css";
     <!-- TOAST -->
     <div
       id="toast"
-      class="fixed bottom-6 right-6
-      bg-[#DF533C] text-white
-      px-5 py-3 rounded-xl shadow-lg hidden text-sm"
+      class="fixed bottom-6 right-6 bg-[#DF533C] text-white px-5 py-3 rounded-xl shadow-lg hidden text-sm"
     >
     </div>
 
@@ -114,30 +127,53 @@ import "../styles/global.css";
 
       const logoutBtn = document.getElementById("logoutBtn");
       const emailSidebar = document.getElementById("userEmailSidebar");
-      const emailHeader = document.getElementById("userEmailHeader");
-      const toast = document.getElementById("toast");
+
+      const clientNav = document.getElementById("clientNav");
+      const adminNav = document.getElementById("adminNav");
 
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (user) {
-        if (emailSidebar) emailSidebar.textContent = user.email;
-        if (emailHeader) emailHeader.textContent = user.email;
+      if (!user) window.location.href = "/login";
+
+      // EMAIL
+      if (emailSidebar) emailSidebar.textContent = user.email;
+
+      // 🔥 DEFAULT: CLIENT VIEW (NO FLICKER)
+      adminNav.style.display = "none";
+
+      const roleText = document.getElementById("userRole");
+
+      // GET ROLE
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      // SET ROLE TEXT
+      if (profile?.role === "admin") {
+        roleText.textContent = "Admin";
+
+        clientNav.style.display = "none";
+        adminNav.style.display = "block";
+      } else {
+        roleText.textContent = "Client";
+
+        adminNav.style.display = "none";
       }
 
+      // SWITCH IF ADMIN
+      if (profile?.role === "admin") {
+        clientNav.style.display = "none";
+        adminNav.style.display = "block";
+      }
+
+      // LOGOUT
       logoutBtn.onclick = async () => {
         await supabase.auth.signOut();
         window.location.href = "/login";
-      };
-
-      window.showToast = (message) => {
-        toast.textContent = message;
-        toast.classList.remove("hidden");
-
-        setTimeout(() => {
-          toast.classList.add("hidden");
-        }, 2000);
       };
     </script>
   </body>

@@ -18,20 +18,18 @@ import "../styles/global.css";
   <body class="bg-[#000] text-white overflow-hidden">
     <!-- HERO -->
     <section class="relative h-screen flex items-center justify-center px-6">
-      <!-- 🔥 BACKGROUND GLOW LAYER 1 -->
+      <!-- 🔥 BACKGROUND -->
       <div
         class="glow-animate w-[600px] h-[600px] bg-[#DF533C]/20 blur-[140px] rounded-full"
       >
       </div>
 
-      <!-- 🔥 BACKGROUND GLOW LAYER 2 -->
       <div
         class="glow-animate w-[400px] h-[400px] bg-white/5 blur-[120px] rounded-full"
         style="animation-delay: 4s;"
       >
       </div>
 
-      <!-- 🔥 NOISE TEXTURE -->
       <div
         class="pointer-events-none absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"
       >
@@ -53,12 +51,12 @@ import "../styles/global.css";
         </h1>
 
         <!-- SUBTITLE -->
-        <p class="text-lg text-gray-300 mb-2">
+        <p class="text-lg text-gray-200 mb-2">
           A modern dashboard for monitoring and managing all your websites.
         </p>
 
         <!-- DESCRIPTION -->
-        <p class="text-sm text-gray-500 mb-8">
+        <p class="text-sm text-gray-300 mb-8">
           Track performance, access admin panels, and stay in control — all in
           one place.
         </p>
@@ -76,19 +74,24 @@ import "../styles/global.css";
             Sign In
           </a>
 
-          <!-- REGISTER -->
+          <!-- PRICING -->
           <a
-            href="/register"
+            href="/pricing"
             class="w-full sm:w-auto border border-white/10 hover:bg-white/5 transition px-6 py-3 rounded-lg font-medium flex items-center justify-center gap-2"
           >
-            <i class="fa-solid fa-user-plus"></i>
-            Register
+            <i class="fa-solid fa-tags"></i>
+            View Pricing
           </a>
         </div>
+
+        <!-- TRUST LINE -->
+        <p class="text-xs text-gray-100 mt-6">
+          Built for agencies and freelancers managing multiple clients
+        </p>
       </div>
     </section>
 
-    <!-- SCRIPT (OPTIONAL AUTO REDIRECT IF LOGGED IN) -->
+    <!-- AUTO REDIRECT IF LOGGED IN -->
     <script type="module">
       import { supabase } from "/supabase.js";
 

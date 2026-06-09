@@ -13,21 +13,21 @@ import Layout from "../layouts/DashboardLayout.astro";
       <input
         id="name"
         placeholder="Website Name"
-        class="w-full p-3 rounded-lg bg-black border border-white/10 border border-white/10 text-white"
+        class="w-full p-3 rounded-lg bg-black border border-white/10 text-white"
         required
       />
 
       <input
         id="url"
         placeholder="https://example.com"
-        class="w-full p-3 rounded-lg bg-black border border-white/10 border border-white/10 text-white"
+        class="w-full p-3 rounded-lg bg-black border border-white/10 text-white"
         required
       />
 
       <input
         id="admin_url"
         placeholder="Admin URL"
-        class="w-full p-3 rounded-lg bg-black border border-white/10 border border-white/10 text-white"
+        class="w-full p-3 rounded-lg bg-black border border-white/10 text-white"
         required
       />
 
@@ -68,8 +68,9 @@ import Layout from "../layouts/DashboardLayout.astro";
 
       <div class="flex justify-end gap-2">
         <button id="closeModal">Cancel</button>
-        <button id="saveEdit" class="bg-blue-500 px-3 py-1 rounded">Save</button
-        >
+        <button id="saveEdit" class="bg-blue-500 px-3 py-1 rounded">
+          Save
+        </button>
       </div>
     </div>
   </div>
@@ -87,17 +88,54 @@ import Layout from "../layouts/DashboardLayout.astro";
 
     let currentEditId = null;
 
+    // ✅ TOAST FUNCTION (FIXED)
+    window.showToast = (message = "Done") => {
+      const toast = document.createElement("div");
+      toast.textContent = message;
+
+      toast.className =
+        "fixed bottom-5 right-5 bg-black text-white px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50";
+
+      document.body.appendChild(toast);
+
+      setTimeout(() => (toast.style.opacity = "1"), 10);
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 300);
+      }, 2000);
+    };
+
+    // 🔐 AUTH
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) window.location.href = "/login";
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role === "admin") {
+      window.location.href = "/admin";
+    }
+
+    // 📋 LOAD
     async function loadWebsites() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("websites")
         .select("*")
         .eq("user_id", user.id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      if (!data) return;
 
       app.innerHTML = data
         .map(
@@ -105,34 +143,34 @@ import Layout from "../layouts/DashboardLayout.astro";
         <div class="relative bg-[#252525] border border-white/10 rounded-2xl p-6 group">
 
           <div class="flex justify-between mb-4">
-            <h2>${site.name}</h2>
+            <h2>${site.name || "Untitled Website"}</h2>
 
-<div class="flex gap-3 text-sm opacity-70 group-hover:opacity-100 transition">
+            <div class="flex gap-3 text-sm opacity-70 group-hover:opacity-100 transition">
+              <button class="editBtn hover:text-[var(--accent)]"
+                data-id="${site.id}"
+                data-name="${site.name}"
+                data-url="${site.url}"
+                data-admin="${site.admin_url}">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
 
-  <button class="editBtn hover:text-[var(--accent)]"
-    data-id="${site.id}"
-    data-name="${site.name}"
-    data-url="${site.url}"
-    data-admin="${site.admin_url}">
-    <i class="fa-solid fa-pen-to-square"></i>
-  </button>
-
-  <button class="deleteBtn hover:text-red-400"
-    data-id="${site.id}">
-    <i class="fa-solid fa-trash"></i>
-  </button>
-
-</div>
+              <button class="deleteBtn hover:text-red-400"
+                data-id="${site.id}">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
           </div>
 
           <div class="text-xs text-gray-400 mb-5">${site.url}</div>
 
           <div class="flex gap-2">
-            <a href="${site.url}" target="_blank" class="flex-1 text-center bg-[var(--accent)] hover:opacity-90 px-3 py-2 rounded-lg text-sm font-medium">
+            <a href="${site.url}" target="_blank"
+              class="flex-1 text-center bg-[var(--accent)] hover:opacity-90 px-3 py-2 rounded-lg text-sm font-medium">
               Visit
             </a>
 
-            <a href="${site.admin_url}" target="_blank" class="flex-1 bg-white/10 text-center py-2 rounded">
+            <a href="${site.admin_url}" target="_blank"
+              class="flex-1 bg-white/10 text-center py-2 rounded">
               Admin
             </a>
           </div>
@@ -142,6 +180,7 @@ import Layout from "../layouts/DashboardLayout.astro";
         )
         .join("");
 
+      // ✏️ EDIT
       document.querySelectorAll(".editBtn").forEach((btn) => {
         btn.onclick = () => {
           currentEditId = btn.dataset.id;
@@ -155,17 +194,28 @@ import Layout from "../layouts/DashboardLayout.astro";
         };
       });
 
+      // 🗑 DELETE
       document.querySelectorAll(".deleteBtn").forEach((btn) => {
         btn.onclick = async () => {
-          await supabase.from("websites").delete().eq("id", btn.dataset.id);
+          const { error } = await supabase
+            .from("websites")
+            .delete()
+            .eq("id", btn.dataset.id);
+
+          if (error) {
+            window.showToast("Delete failed");
+            return;
+          }
+
           window.showToast("Deleted");
           loadWebsites();
         };
       });
     }
 
+    // 💾 SAVE EDIT
     document.getElementById("saveEdit").onclick = async () => {
-      await supabase
+      const { error } = await supabase
         .from("websites")
         .update({
           name: editName.value,
@@ -173,6 +223,11 @@ import Layout from "../layouts/DashboardLayout.astro";
           admin_url: editAdmin.value,
         })
         .eq("id", currentEditId);
+
+      if (error) {
+        window.showToast("Update failed");
+        return;
+      }
 
       modal.classList.add("hidden");
       window.showToast("Updated");
@@ -183,23 +238,47 @@ import Layout from "../layouts/DashboardLayout.astro";
       modal.classList.add("hidden");
     };
 
+    // ➕ ADD WEBSITE
     form.onsubmit = async (e) => {
       e.preventDefault();
 
-      await supabase.from("websites").insert([
+      const nameInput = document.getElementById("name");
+      const urlInput = document.getElementById("url");
+      const adminInput = document.getElementById("admin_url");
+
+      const { error } = await supabase.from("websites").insert([
         {
-          name: name.value,
-          url: url.value,
-          admin_url: admin_url.value,
+          name: nameInput.value,
+          url: urlInput.value,
+          admin_url: adminInput.value,
           user_id: user.id,
         },
       ]);
+
+      if (error) {
+        console.error(error);
+        window.showToast("Error adding website");
+        return;
+      }
 
       form.reset();
       window.showToast("Added");
       loadWebsites();
     };
 
+    // 🔁 REALTIME
+    supabase
+      .channel("websites-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "websites" },
+        () => {
+          loadWebsites();
+        },
+      )
+      .subscribe();
+
+    // 🚀 INITIAL LOAD
     loadWebsites();
   </script>
 </Layout>

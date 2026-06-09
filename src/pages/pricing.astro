@@ -1,0 +1,162 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pricing</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+
+  <body class="bg-[#000] text-white overflow-hidden">
+    <!-- HERO -->
+    <section
+      class="relative h-screen flex flex-col items-center justify-center px-6"
+    >
+      <!-- BACKGROUND -->
+      <div
+        class="glow-animate w-[600px] h-[600px] bg-[#DF533C]/20 blur-[140px] rounded-full"
+      >
+      </div>
+
+      <div
+        class="glow-animate w-[400px] h-[400px] bg-white/5 blur-[120px] rounded-full"
+        style="animation-delay: 4s;"
+      >
+      </div>
+
+      <div
+        class="pointer-events-none absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"
+      >
+      </div>
+
+      <!-- 🔥 HERO TEXT (KEEP NARROW) -->
+      <div class="relative z-10 text-center max-w-2xl mb-12">
+        <h1 class="text-4xl md:text-5xl font-semibold tracking-tight mb-4">
+          Choose Your Plan
+        </h1>
+
+        <p class="text-sm text-gray-300">
+          Choose the plan that fits your workflow. Upgrade anytime.
+        </p>
+      </div>
+
+      <!-- 🔥 PRICING (FULL 1280px WIDTH) -->
+      <div class="relative z-10 w-full max-w-[1280px] mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- STARTER -->
+          <div class="bg-[#252525] border border-white/10 rounded-2xl p-6">
+            <h3 class="text-lg font-medium mb-2">Starter</h3>
+            <p class="text-gray-400 text-sm mb-4">For individuals</p>
+
+            <p class="text-3xl font-semibold mb-6">
+              ₱499<span class="text-sm text-gray-400">/mo</span>
+            </p>
+
+            <ul class="space-y-3 text-sm text-gray-300 mb-6">
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Up to 3 websites
+              </li>
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Basic analytics
+              </li>
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Status monitoring
+              </li>
+            </ul>
+
+            <button
+              class="w-full bg-[#DF533C] py-2 rounded-lg hover:opacity-90 transition"
+            >
+              Get Started
+            </button>
+          </div>
+
+          <!-- PRO -->
+          <div
+            class="bg-[#252525] border border-[#DF533C]/40 rounded-2xl p-6 relative"
+          >
+            <span
+              class="absolute top-3 right-3 text-xs bg-[#DF533C] px-2 py-1 rounded"
+            >
+              Popular
+            </span>
+
+            <h3 class="text-lg font-medium mb-2">Pro</h3>
+            <p class="text-gray-400 text-sm mb-4">For professionals</p>
+
+            <p class="text-3xl font-semibold mb-6">
+              ₱999<span class="text-sm text-gray-400">/mo</span>
+            </p>
+
+            <ul class="space-y-3 text-sm text-gray-300 mb-6">
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Up to 10 websites
+              </li>
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Advanced analytics
+              </li>
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Priority support
+              </li>
+            </ul>
+
+            <button
+              class="w-full bg-[#DF533C] py-2 rounded-lg hover:opacity-90 transition"
+            >
+              Choose Plan
+            </button>
+          </div>
+
+          <!-- AGENCY -->
+          <div class="bg-[#252525] border border-white/10 rounded-2xl p-6">
+            <h3 class="text-lg font-medium mb-2">Agency</h3>
+            <p class="text-gray-400 text-sm mb-4">For teams & agencies</p>
+
+            <p class="text-3xl font-semibold mb-6">
+              ₱1999<span class="text-sm text-gray-400">/mo</span>
+            </p>
+
+            <ul class="space-y-3 text-sm text-gray-300 mb-6">
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Unlimited websites
+              </li>
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Full analytics
+                suite
+              </li>
+              <li>
+                <i class="fa-solid fa-check text-green-400 mr-2"></i> Dedicated support
+              </li>
+            </ul>
+
+            <button
+              class="w-full bg-[#DF533C] py-2 rounded-lg hover:opacity-90 transition"
+            >
+              Contact Sales
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="relative z-10 text-center mt-12">
+        <p class="text-gray-400 mb-4">Already have an account?</p>
+
+        <a
+          href="/login"
+          class="inline-flex items-center gap-2 bg-[#DF533C] px-6 py-3 rounded-lg hover:opacity-90 transition"
+        >
+          <i class="fa-solid fa-right-to-bracket"></i>
+          Sign In
+        </a>
+      </div>
+    </section>
+  </body>
+</html>

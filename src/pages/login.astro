@@ -28,7 +28,7 @@ import "../styles/global.css";
         class="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-xl"
       >
         <!-- LOGO -->
-        <div class="mb-6 text-center">
+        <div id="loginHeader" class="mb-6 text-center">
           <img src="/favicon.svg" class="w-14 h-14 mx-auto mb-3" />
           <p class="text-gray-400 text-sm">Client Dashboard Login</p>
         </div>
@@ -68,7 +68,6 @@ import "../styles/global.css";
                 required
               />
 
-              <!-- TOGGLE -->
               <button
                 type="button"
                 id="togglePassword"
@@ -81,7 +80,6 @@ import "../styles/global.css";
 
           <!-- OPTIONS -->
           <div class="flex items-center justify-between text-sm">
-            <!-- FORGOT -->
             <a
               href="/forgot-password"
               class="text-gray-400 hover:text-[#DF533C] transition"
@@ -100,7 +98,6 @@ import "../styles/global.css";
               Login
             </span>
 
-            <!-- SPINNER -->
             <span id="spinner" class="hidden">
               <i class="fa-solid fa-spinner animate-spin"></i>
             </span>
@@ -117,6 +114,7 @@ import "../styles/global.css";
       import { supabase } from "/supabase.js";
 
       const form = document.getElementById("loginForm");
+      const header = document.getElementById("loginHeader");
       const errorMsg = document.getElementById("errorMsg");
       const togglePassword = document.getElementById("togglePassword");
       const passwordInput = document.getElementById("password");
@@ -124,13 +122,10 @@ import "../styles/global.css";
       const btnText = document.getElementById("btnText");
       const spinner = document.getElementById("spinner");
 
-      // 👁 SHOW / HIDE PASSWORD
+      // 👁 TOGGLE PASSWORD
       togglePassword.onclick = () => {
         const isPassword = passwordInput.type === "password";
         passwordInput.type = isPassword ? "text" : "password";
-        togglePassword.innerHTML = isPassword
-          ? '<i class="fa-solid fa-eye-slash"></i>'
-          : '<i class="fa-solid fa-eye"></i>';
       };
 
       // 🔐 LOGIN
@@ -139,14 +134,13 @@ import "../styles/global.css";
 
         errorMsg.classList.add("hidden");
 
-        // LOADING STATE
         btnText.classList.add("hidden");
         spinner.classList.remove("hidden");
 
         const email = document.getElementById("email").value;
         const password = passwordInput.value;
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -155,27 +149,75 @@ import "../styles/global.css";
           errorMsg.textContent = error.message;
           errorMsg.classList.remove("hidden");
 
-          // RESET BUTTON
           spinner.classList.add("hidden");
           btnText.classList.remove("hidden");
           return;
         }
 
-        // SUCCESS UI
-        form.innerHTML = `
-  <div class="text-center success-animate">
-    <div class="text-green-400 text-3xl mb-2">
-      <i class="fa-solid fa-circle-check"></i>
-    </div>
-    <p class="text-sm text-gray-300">Login successful</p>
-  </div>
-`;
+        const user = data.user;
 
-        // DELAY REDIRECT
+        // 🔥 SMOOTH FADE OUT
+        form.style.opacity = "0";
+        form.style.transition = "opacity 0.2s ease";
+
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          // 🔥 HIDE HEADER
+          header.style.display = "none";
+
+          // 🔥 SUCCESS UI
+          form.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-6">
+              
+              <div class="w-14 h-14 flex items-center justify-center rounded-full bg-green-500/20 mb-4">
+                <i class="fa-solid fa-check text-green-400 text-xl"></i>
+              </div>
+
+              <p class="text-sm text-gray-300">Welcome back</p>
+            </div>
+          `;
+
+          form.style.opacity = "1";
+        }, 200);
+
+        // 🔁 REDIRECT
+        setTimeout(async () => {
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          if (error || !profile) {
+            window.location.href = "/dashboard";
+            return;
+          }
+
+          if (profile.role === "admin") {
+            window.location.href = "/admin";
+          } else {
+            window.location.href = "/dashboard";
+          }
         }, 1200);
       });
+
+      // 🚀 AUTO REDIRECT IF LOGGED IN
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      if (sessionData.session) {
+        const user = sessionData.session.user;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (profile?.role === "admin") {
+          window.location.href = "/admin";
+        } else {
+          window.location.href = "/dashboard";
+        }
+      }
     </script>
   </body>
 </html>
